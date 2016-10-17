@@ -130,18 +130,18 @@ func runeCmp(one, two []rune) int {
 		}
 		if i >= oneLen || i >= twoLen {
 			if twoLen > oneLen {
-				return 1
+				return -1
 			}
-			return -1
+			return 1
 		}
 
 		rOne := one[i]
 		rTwo := two[i]
 		if rOne < rTwo {
-			return 1
+			return -1
 		}
 		if rTwo < rOne {
-			return -1
+			return 1
 		}
 
 		i++
@@ -151,8 +151,8 @@ func runeCmp(one, two []rune) int {
 // rpmVerCmp compares epoch or version or release, deciding which is
 // newer, similar to rpmvercmp in version.c.
 //   0 if a and b are equal
-//  -1 if a is older
-//   1 if b is newer
+//   1 if a is newer
+//  -1 if b is newer
 //
 // We expect to find segments (runs of letters or runs of digits)
 // possibly separated by separators, which are characters that are not
@@ -189,9 +189,9 @@ func rpmVerCmp(a, b []rune) int {
 		// If the separator lengths were different, we are also finished
 		if sepA.len() != sepB.len() {
 			if sepA.len() < sepB.len() {
-				return 1
+				return -1
 			}
-			return -1
+			return 1
 		}
 
 		var tokA, tokB token
@@ -210,9 +210,9 @@ func rpmVerCmp(a, b []rune) int {
 		// #60884 (and details) from bugzilla #50977.
 		if tokA.kind != tokB.kind {
 			if tokA.kind == numericType {
-				return -1
+				return 1
 			}
-			return 1
+			return -1
 		}
 
 		if tokA.kind == numericType {
@@ -226,10 +226,10 @@ func rpmVerCmp(a, b []rune) int {
 
 			// whichever number has more digits wins
 			if len(tokA.text) < len(tokB.text) {
-				return 1
+				return -1
 			}
 			if len(tokB.text) < len(tokA.text) {
-				return -1
+				return 1
 			}
 		}
 
@@ -255,9 +255,9 @@ func rpmVerCmp(a, b []rune) int {
 	tokA, _ = nextToken(a)
 	tokB, _ = nextToken(b)
 	if (tokA.kind == sepType && tokB.kind != alphaType) || tokA.kind == alphaType {
-		return 1
+		return -1
 	}
-	return -1
+	return 1
 }
 
 // VerCmp compares two Arch linux package version strings.  It returns:
@@ -270,6 +270,16 @@ func rpmVerCmp(a, b []rune) int {
 // Based on the contents of pacman/lib/libalpm/version.c, version
 // v5.0.1.  This was apparently equivalent to rpmvercmp, in rpm
 // version 4.8.1.
+//
+// Different epoch values for version strings will override any further
+// comparison. If no epoch is provided, 0 is assumed.
+//
+// Keep in mind that the pkgrel is only compared if it is available
+// on both versions handed to this function. For example, comparing
+// 1.5-1 and 1.5 will yield 0; comparing 1.5-1 and 1.5-2 will yield
+// -1 as expected. This is mainly for supporting versioned dependencies
+// that do not include the pkgrel.
 func VerCmp(a, b string) int {
+
 	return 0
 }

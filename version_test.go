@@ -90,34 +90,34 @@ func TestRpmVerCmp(t *testing.T) {
 		expected int
 	}{
 		// test comparison of just two numbers
-		{"1", "2", 1},
-		{"2", "1", -1},
+		{"1", "2", -1},
+		{"2", "1", 1},
 		{"2", "2", 0},
 		{"02", "2", 0},
 		{"02", "2", 0},
-		{"020", "2", -1},
+		{"020", "2", 1},
 
 		// test comparison of just alpha types
-		{"a", "b", 1},
-		{"b", "a", -1},
+		{"a", "b", -1},
+		{"b", "a", 1},
 		{"b", "b", 0},
-		{"b", "ba", 1},
+		{"b", "ba", -1},
 
 		// test comparison of just separators
-		{"$a", "#b", 1},
-		{"$b", "#a", -1},
-		{"$$a", "#a", -1},
-		{"$a", "##a", 1},
+		{"$a", "#b", -1},
+		{"$b", "#a", 1},
+		{"$$a", "#a", 1},
+		{"$a", "##a", -1},
 
 		// test numeric vs. alpha
-		{"1", "a", -1},
-		{"a", "1", 1},
+		{"1", "a", 1},
+		{"a", "1", -1},
 
 		// test a few composite cases
-		{"1a01", "1a2", 1},
-		{"1a1", "1a2", 1},
-		{"1a$1", "1a$2", 1},
-		{"1a$$1", "1a$2", -1},
+		{"1a01", "1a2", -1},
+		{"1a1", "1a2", -1},
+		{"1a$1", "1a$2", -1},
+		{"1a$$1", "1a$2", 1},
 	}
 
 	for _, c := range allCases {
