@@ -150,9 +150,9 @@ func runeCmp(one, two []rune) int {
 
 // rpmVerCmp compares epoch or version or release, deciding which is
 // newer, similar to rpmvercmp in version.c.
-//   0 if one and two are equal
-//  -1 if one is older
-//   1 if two is newer
+//   0 if a and b are equal
+//  -1 if a is older
+//   1 if b is newer
 //
 // We expect to find segments (runs of letters or runs of digits)
 // possibly separated by separators, which are characters that are not
@@ -172,35 +172,35 @@ func runeCmp(one, two []rune) int {
 //
 // If we have looped through all segments, we have special logic for
 // the final pair:
-//	 if one is empty and two is numeric, two is newer.
-//	 if one is an alpha, two is newer.
-//	 otherwise one is newer.
-func rpmVerCmp(one, two []rune) int {
+//	 if a is empty and b is numeric, b is newer.
+//	 if a is an alpha, b is newer.
+//	 otherwise a is newer.
+func rpmVerCmp(a, b []rune) int {
 	for {
-		var sepOne, sepTwo separator
-		sepOne, one = nextSeparator(one)
-		sepTwo, two = nextSeparator(two)
+		var sepA, sepB separator
+		sepA, a = nextSeparator(a)
+		sepB, b = nextSeparator(b)
 
 		// If we ran to the end of either, we are finished with the loop
-		if len(one) == 0 || len(two) == 0 {
+		if len(a) == 0 || len(b) == 0 {
 			break
 		}
 
 		// If the separator lengths were different, we are also finished
-		if sepOne.len() != sepTwo.len() {
-			if sepOne.len() < sepTwo.len() {
+		if sepA.len() != sepB.len() {
+			if sepA.len() < sepB.len() {
 				return 1
 			}
 			return -1
 		}
 
-		var tokOne, tokTwo token
-		tokOne, one = nextToken(one)
-		tokTwo, two = nextToken(two)
+		var tokA, tokB token
+		tokA, a = nextToken(a)
+		tokB, b = nextToken(b)
 
 		// this cannot happen, as we previously tested to make sure that
 		// the first string has a non-null segment
-		if tokOne.kind == sepType {
+		if tokA.kind == sepType {
 			return -1 // arbitrary
 		}
 
@@ -208,32 +208,32 @@ func rpmVerCmp(one, two []rune) int {
 		// different types: one numeric, the other alpha.  Numeric
 		// segments are always newer than alpha segments XXX See patch
 		// #60884 (and details) from bugzilla #50977.
-		if tokOne.kind != tokTwo.kind {
-			if tokOne.kind == numericType {
+		if tokA.kind != tokB.kind {
+			if tokA.kind == numericType {
 				return -1
 			}
 			return 1
 		}
 
-		if tokOne.kind == numericType {
+		if tokA.kind == numericType {
 			// this used to be done by converting the digit segments
 			// to ints using atoi() - it's changed because long
 			// digit segments can overflow an int - this should fix that.
 
 			// throw away any leading zeros - it's a number, right?
-			tokOne.text = tokOne.stripLeadingZeros()
-			tokTwo.text = tokTwo.stripLeadingZeros()
+			tokA.text = tokA.stripLeadingZeros()
+			tokB.text = tokB.stripLeadingZeros()
 
 			// whichever number has more digits wins
-			if len(tokOne.text) < len(tokTwo.text) {
+			if len(tokA.text) < len(tokB.text) {
 				return 1
 			}
-			if len(tokTwo.text) < len(tokOne.text) {
+			if len(tokB.text) < len(tokA.text) {
 				return -1
 			}
 		}
 
-		rc := runeCmp(tokOne.text, tokTwo.text)
+		rc := runeCmp(tokA.text, tokB.text)
 		if rc != 0 {
 			return rc
 		}
@@ -241,26 +241,26 @@ func rpmVerCmp(one, two []rune) int {
 
 	// This catches the case where all numeric and alpha segments have
 	// compared identically and we ran out of more segments.
-	if len(one) == 0 || len(two) == 0 {
+	if len(a) == 0 || len(b) == 0 {
 		return 0
 	}
 
 	/* the final showdown. we never want a remaining alpha string to
 	 * beat an empty string. the logic is a bit weird, but:
-	 * - if one is empty and two is not an alpha, two is newer.
-	 * - if one is an alpha, two is newer.
-	 * - otherwise one is newer.
+	 * - if a is empty and b is not an alpha, b is newer.
+	 * - if a is an alpha, b is newer.
+	 * - otherwise a is newer.
 	 * */
-	var tokOne, tokTwo token
-	tokOne, _ = nextToken(one)
-	tokTwo, _ = nextToken(two)
-	if (tokOne.kind == sepType && tokTwo.kind != alphaType) || tokOne.kind == alphaType {
+	var tokA, tokB token
+	tokA, _ = nextToken(a)
+	tokB, _ = nextToken(b)
+	if (tokA.kind == sepType && tokB.kind != alphaType) || tokA.kind == alphaType {
 		return 1
 	}
 	return -1
 }
 
-// VerCmp compares two arch linux package version strings.  It returns:
+// VerCmp compares two Arch linux package version strings.  It returns:
 //   0 if the versions are equal
 //  -1 if a is older
 //   1 if a is newer
