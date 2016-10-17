@@ -280,6 +280,31 @@ func rpmVerCmp(a, b []rune) int {
 // -1 as expected. This is mainly for supporting versioned dependencies
 // that do not include the pkgrel.
 func VerCmp(a, b string) int {
+	if len(a) == 0 && len(b) == 0 {
+		return 0
+	}
+	if len(a) == 0 {
+		return -1
+	}
+	if len(b) == 0 {
+		return 1
+	}
+	if a == b {
+		return 0
+	}
+
+	parsedA := parseEVR(a)
+	parsedB := parseEVR(b)
+
+	if ret := rpmVerCmp(parsedA.epoch, parsedB.epoch); ret != 0 {
+		return ret
+	}
+	if ret := rpmVerCmp(parsedA.version, parsedB.version); ret != 0 {
+		return ret
+	}
+	if len(parsedA.release) > 0 && len(parsedB.release) > 0 {
+		return rpmVerCmp(parsedA.release, parsedB.release)
+	}
 
 	return 0
 }

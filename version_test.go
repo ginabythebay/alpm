@@ -128,6 +128,29 @@ func TestRpmVerCmp(t *testing.T) {
 	}
 }
 
+func TestVerCmp(t *testing.T) {
+	allCases := []struct {
+		one      string
+		two      string
+		expected int
+	}{
+		{"1.5", "1.4", 1},
+		{"1.4", "1.5", -1},
+		{"1.5", "1.5", 0},
+		{"1.5-1", "1.5", 0},
+		{"1.5", "1.5-1", 0},
+		{"1.5-1", "1.5-2", -1},
+		{"1.5-2", "1.5-1", 1},
+	}
+
+	for _, c := range allCases {
+		t.Run(fmt.Sprintf("%q:%q", c.one, c.two), func(t *testing.T) {
+			actual := VerCmp(c.one, c.two)
+			equals(t, c.expected, actual)
+		})
+	}
+}
+
 // equals fails the test if exp is not equal to act.
 func equals(tb testing.TB, exp, act interface{}) {
 	if !reflect.DeepEqual(exp, act) {
