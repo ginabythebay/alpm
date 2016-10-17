@@ -137,6 +137,9 @@ func TestVerCmp(t *testing.T) {
 		{"1.5", "1.4", 1},
 		{"1.4", "1.5", -1},
 		{"1.5", "1.5", 0},
+		{"1.5b", "1.5a", 1},
+		{"1.5b", "1.5", 0},
+		{"1:1.5", "1.5", 1},
 		{"1.5-1", "1.5", 0},
 		{"1.5", "1.5-1", 0},
 		{"1.5-1", "1.5-2", -1},
@@ -146,6 +149,26 @@ func TestVerCmp(t *testing.T) {
 	for _, c := range allCases {
 		t.Run(fmt.Sprintf("%q:%q", c.one, c.two), func(t *testing.T) {
 			actual := VerCmp(c.one, c.two)
+			equals(t, c.expected, actual)
+		})
+	}
+}
+
+func TestLess(t *testing.T) {
+	allCases := []struct {
+		one      string
+		two      string
+		expected bool
+	}{
+		{"1.5", "1.4", false},
+		{"1.4", "1.5", true},
+		{"1.5", "1.5", false},
+		{"1.5-1", "1.5", false},
+	}
+
+	for _, c := range allCases {
+		t.Run(fmt.Sprintf("%q:%q", c.one, c.two), func(t *testing.T) {
+			actual := Less(c.one, c.two)
 			equals(t, c.expected, actual)
 		})
 	}

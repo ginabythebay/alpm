@@ -265,6 +265,8 @@ func rpmVerCmp(a, b []rune) int {
 //  -1 if a is older
 //   1 if a is newer
 //
+// This is the go equivalent of the C function alpm_pkg_vercmp.
+//
 // Note that this is not semantic versioning.
 //
 // Based on the contents of pacman/lib/libalpm/version.c, version
@@ -307,4 +309,10 @@ func VerCmp(a, b string) int {
 	}
 
 	return 0
+}
+
+// Less compares a to be as arch linux package version strings and
+// returns true if a is less than (older than) b.
+func Less(a, b string) bool {
+	return VerCmp(a, b) == -1
 }
